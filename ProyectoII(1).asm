@@ -17,10 +17,12 @@ tablero:	.word   0
 rondas: 	.word	0
 nuevoJuego:	.word	0
 piedrasArchivo:	.space 169
-nombreArchivo:		.asciiz "/home/alejandra/Dropbox/Organizacion\ del\ computador/Proyectos/Proyecto\ II/PIEDRAS"
-saltoDeLinea:		.asciiz "\n"
-mensaje: 			.asciiz "Caracteres leidos: "
-texto:			.asciiz "Texto:\n"
+nombre:		.space 20
+nombreArchivo:	.asciiz "/home/alejandra/Dropbox/Organizacion\ del\ computador/Proyectos/Proyecto\ II/PIEDRAS"
+saltoDeLinea:	.asciiz "\n"
+mensaje: 	.asciiz "Jugador "
+texto:		.asciiz " introduzca su nombre :   "
+#nombre:		
 
 
 		.text
@@ -42,6 +44,13 @@ texto:			.asciiz "Texto:\n"
 	syscall
 .end_macro
 
+.macro reservarEspacio(%espacio) # Macro para reservar espacio de memoria
+
+	li		$v0  9
+	move		$a0  %espacio
+	syscall
+.end_macro 
+
 ########################################################
 #             INICIO DEL CODIGO PRINCIPAL              #                      
 ########################################################
@@ -53,6 +62,11 @@ jal leerArchivoPiedras
 # Se crea la clase jugador
 jal CrearClaseJugador 
 sw $v0 jugadores
+
+move $t7 $v0  # Se estaria trabajando la estructura de datos jugador como algo global (no se si eso es bueno)
+
+# Pedir nombre a Jugadores
+jal PedirYalmacenarNombreJugadores
 
 # Se crea la clase tablero
 jal CrearClaseTablero
@@ -76,14 +90,14 @@ loopPrincipal:
 	
 	# Se verifica si los puntos del grupo 1 son mayores o iguales que 100
 	lw $s1 jugadores
-	lw $s2 20($s1)
+	lw $s2 4($s1)
 	li $s3 100
 	bge $s2 $s3 RevisarPuntos
 	blt $s2 $s3 continuar
 
 	continuar:
 		# Se verifica si los puntos del grupo 2 son mayores o iguales que 100
-		lw $s2 28($s1)
+		lw $s2 16($s1)
 		bge $s2 $s3 RevisarPuntos
 		blt $s2 $s3 VerificarRondaNueva
 		
@@ -117,6 +131,22 @@ loopPrincipal:
 		move $s7 $v0
 		
 	continuarJuego:
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 		
 
@@ -173,11 +203,67 @@ errorLectura:
 
 CrearClaseJugador:
 	
-	li $a0 112
+	li $a0 48
 	li $v0 9
 	syscall
 	
+	# Se inicializan los puntos en 0
+	li $a0 0
+	sw $a0 4($v0)
+	sw $a0 16($v0)
+	sw $a0 28($v0)
+	sw $a0 40($v0)
+	
 	jr $ra
+	
+	
+PedirYalmacenarNombreJugadores:
+
+	#
+	#  Registro de entrada:
+	#	* $t7: Variable que almacenara la direccion de la clase jugador
+	#
+	#  Registro de salida:
+	#	Ninguno
+	
+	
+	
+	li $t1 4
+	li $t4 12
+	loop:
+		imprimir_t (mensaje)
+		imprimir_i ($t1)
+		imprimir_t (texto)
+		
+
+		li $v0 8
+		la $a0, nombre
+		li $a1 20
+		syscall
+		
+		la $t2 nombre # Almaceno el nombre del jugador 
+		addi $t3 $t1 -1 # Multiplico 28(i-1)
+		mult $t3 $t4
+		mflo $t3
+		
+		add $t6 $t7 $t3 # Me muevo hasta la posicion en donde esta 
+		sw $t2 ($t6)	# Se almacena la direccion del nombre del jugador
+		
+	
+		#li $v0 4
+		#move  $a0 $t2
+		#syscall
+		#imprimir_t ($t2)
+		#imprimir_t (saltoDeLinea)
+		
+		#li $v0 4
+		#la $a0 saltoDeLinea
+		#syscall
+		
+		addi $t1 $t1 -1
+		bnez $t1 loop	
+	jr $ra	
+	
 		
 CrearClaseTablero:
 
@@ -190,7 +276,7 @@ CrearClaseTablero:
 	syscall
 		
 	sw $zero ($v0)
-	li $a0 1
+	li $a0 0
 	sw $a0 4($v0)
 	sw $zero 8($v0)
 	
